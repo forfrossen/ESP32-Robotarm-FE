@@ -22,7 +22,7 @@
     "**/.eslintcache": true,
     "**/.git": true,
     "**/.gitattributes": true,
-    "**/.husky": true,
+    "**/.husky": false,
     "**/.pnp.*": true,
     "**/.prettierignore": true,
     "**/node_modules": true,

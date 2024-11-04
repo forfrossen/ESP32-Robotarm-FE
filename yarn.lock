@@ -2296,12 +2296,37 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@socket.io/component-emitter@npm:~3.1.0":
+  version: 3.1.2
+  resolution: "@socket.io/component-emitter@npm:3.1.2"
+  checksum: 10/89888f00699eb34e3070624eb7b8161fa29f064aeb1389a48f02195d55dd7c52a504e52160016859f6d6dffddd54324623cdd47fd34b3d46f9ed96c18c456edc
+  languageName: node
+  linkType: hard
+
 "@szmarczak/http-timer@npm:^5.0.1":
   version: 5.0.1
   resolution: "@szmarczak/http-timer@npm:5.0.1"
   dependencies:
     defer-to-connect: "npm:^2.0.1"
   checksum: 10/fc9cb993e808806692e4a3337c90ece0ec00c89f4b67e3652a356b89730da98bc824273a6d67ca84d5f33cd85f317dcd5ce39d8cc0a2f060145a608a7cb8ce92
+  languageName: node
+  linkType: hard
+
+"@tanstack/query-core@npm:5.59.17":
+  version: 5.59.17
+  resolution: "@tanstack/query-core@npm:5.59.17"
+  checksum: 10/9ba6612b65f8a4c65cbf264df01be9a18895ba4f8faaa115ca11364bbee6d79ba71327b1257b31283f3f7d25e3dc954e18204d3ec53154dd8d3e4ba0a53cee24
+  languageName: node
+  linkType: hard
+
+"@tanstack/react-query@npm:^5.59.19":
+  version: 5.59.19
+  resolution: "@tanstack/react-query@npm:5.59.19"
+  dependencies:
+    "@tanstack/query-core": "npm:5.59.17"
+  peerDependencies:
+    react: ^18 || ^19
+  checksum: 10/def87fc10646c79a355a05f9a76faa0b4ca511073cd80ebe2a701d05f43969c41498e42bd5228c3c6047d5af3e5805ced5a72a890504f776b861eaf4d17eea0d
   languageName: node
   linkType: hard
 
@@ -2473,6 +2498,13 @@ __metadata:
   dependencies:
     "@types/node": "npm:*"
   checksum: 10/aa1a3e66cd43cbf06ea5901bf761d2031200a0ab42ba7e462a15c752e70f8669f21fb3be7c2f18fefcb83b95132dfa15740282e7421b856745598fbaea8e3a42
+  languageName: node
+  linkType: hard
+
+"@types/js-cookie@npm:^3":
+  version: 3.0.6
+  resolution: "@types/js-cookie@npm:3.0.6"
+  checksum: 10/272d551687547445cb210213c73e72e0e5d58ad73e2e444a65d688b8ff9425529779ee0cd6492aaa1f070161916d4254ef2b1a76d64179100437f60749d094ef
   languageName: node
   linkType: hard
 
@@ -3102,6 +3134,8 @@ __metadata:
     "@mui/joy": "npm:^5.0.0-beta.28"
     "@mui/lab": "npm:^5.0.0-alpha.165"
     "@mui/material": "npm:^5.15.10"
+    "@tanstack/react-query": "npm:^5.59.19"
+    "@types/js-cookie": "npm:^3"
     "@types/node": "npm:^20.11.18"
     "@types/react": "npm:^18.2.55"
     "@types/react-dom": "npm:^18.2.19"
@@ -3111,11 +3145,15 @@ __metadata:
     happy-dom: "npm:^13.3.8"
     jotai: "npm:^2.6.4"
     jotai-effect: "npm:^0.5.0"
+    js-cookie: "npm:^3.0.5"
+    json-rpc-2.0: "npm:^1.7.0"
     localforage: "npm:^1.10.0"
     notistack: "npm:^3.0.1"
     react: "npm:^18.2.0"
     react-dom: "npm:^18.2.0"
     react-router-dom: "npm:^6.22.0"
+    react-use-websocket: "npm:^4.10.1"
+    socket.io-client: "npm:^4.8.0"
     typescript: "npm:~5.3.3"
     vite: "npm:~5.1.2"
     vitest: "npm:~1.2.2"
@@ -3985,6 +4023,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"debug@npm:~4.3.1, debug@npm:~4.3.2":
+  version: 4.3.7
+  resolution: "debug@npm:4.3.7"
+  dependencies:
+    ms: "npm:^2.1.3"
+  peerDependenciesMeta:
+    supports-color:
+      optional: true
+  checksum: 10/71168908b9a78227ab29d5d25fe03c5867750e31ce24bf2c44a86efc5af041758bb56569b0a3d48a9b5344c00a24a777e6f4100ed6dfd9534a42c1dde285125a
+  languageName: node
+  linkType: hard
+
 "decompress-response@npm:^6.0.0":
   version: 6.0.0
   resolution: "decompress-response@npm:6.0.0"
@@ -4264,6 +4314,26 @@ __metadata:
   dependencies:
     once: "npm:^1.4.0"
   checksum: 10/530a5a5a1e517e962854a31693dbb5c0b2fc40b46dad2a56a2deec656ca040631124f4795823acc68238147805f8b021abbe221f4afed5ef3c8e8efc2024908b
+  languageName: node
+  linkType: hard
+
+"engine.io-client@npm:~6.6.1":
+  version: 6.6.1
+  resolution: "engine.io-client@npm:6.6.1"
+  dependencies:
+    "@socket.io/component-emitter": "npm:~3.1.0"
+    debug: "npm:~4.3.1"
+    engine.io-parser: "npm:~5.2.1"
+    ws: "npm:~8.17.1"
+    xmlhttprequest-ssl: "npm:~2.1.1"
+  checksum: 10/9346c3ee60ebb7a58966e927e479b8b3c5d6bc82788ad5efc38b976c4a3b2b27420d08cb29b84de8213004d49bdeed47ecd473b427498e54301a8853cd85e0c9
+  languageName: node
+  linkType: hard
+
+"engine.io-parser@npm:~5.2.1":
+  version: 5.2.3
+  resolution: "engine.io-parser@npm:5.2.3"
+  checksum: 10/eb0023fff5766e7ae9d59e52d92df53fea06d472cfd7b52e5d2c36b4c1dbf78cab5fde1052bcb3d4bb85bdb5aee10ae85d8a1c6c04676dac0c6cdf16bcba6380
   languageName: node
   linkType: hard
 
@@ -6789,6 +6859,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"js-cookie@npm:^3.0.5":
+  version: 3.0.5
+  resolution: "js-cookie@npm:3.0.5"
+  checksum: 10/366494b1630b9fb8abaef3659748db5dfd52c58c6fc3459b9f0a03b492593bc1b01c6dfcc066b46f6413c28edb3a00cc68fb61ea8cdf6991bedf1f100f8a389d
+  languageName: node
+  linkType: hard
+
 "js-tokens@npm:^3.0.0 || ^4.0.0, js-tokens@npm:^4.0.0":
   version: 4.0.0
   resolution: "js-tokens@npm:4.0.0"
@@ -6869,6 +6946,13 @@ __metadata:
   version: 3.0.1
   resolution: "json-parse-even-better-errors@npm:3.0.1"
   checksum: 10/bf74fa3f715e56699ccd68b80a7d20908de432a3fae2d5aa2ed530a148e9d9ccdf8e6983b93d9966a553aa70dcf003ce3a7ffec2c0ce74d2a6173e3691a426f0
+  languageName: node
+  linkType: hard
+
+"json-rpc-2.0@npm:^1.7.0":
+  version: 1.7.0
+  resolution: "json-rpc-2.0@npm:1.7.0"
+  checksum: 10/063e6e19fd41bd96e2b125b70e153961bc244c03e139ff7d64caa548b35986fb537f72f4ca9cfe45c43bbb707861cf08983f1b1c61027432128c22f939080e0c
   languageName: node
   linkType: hard
 
@@ -7498,7 +7582,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ms@npm:2.1.3, ms@npm:^2.0.0, ms@npm:^2.1.1":
+"ms@npm:2.1.3, ms@npm:^2.0.0, ms@npm:^2.1.1, ms@npm:^2.1.3":
   version: 2.1.3
   resolution: "ms@npm:2.1.3"
   checksum: 10/aa92de608021b242401676e35cfa5aa42dd70cbdc082b916da7fb925c542173e36bce97ea3e804923fe92c0ad991434e4a38327e15a1b5b5f945d66df615ae6d
@@ -8479,6 +8563,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-use-websocket@npm:^4.10.0":
+  version: 4.10.0
+  resolution: "react-use-websocket@npm:4.10.0"
+  checksum: 10/3f03ae19501961efdcefa3ab81e0f80d868f1b5cfe215ad0e35da589ecb4d9747f20504c7f824ab65c80b5231af959b9994785d2284a6024ed205300a930d277
+  languageName: node
+  linkType: hard
+
+"react-use-websocket@npm:^4.10.1":
+  version: 4.10.1
+  resolution: "react-use-websocket@npm:4.10.1"
+  checksum: 10/162c1401a7e1cb77d2b10833c5c709ad3c4469a768ea4ff303636c05ed8302a02f23b08988bc6291acbcfa5d2a8894e0f54438860943652ebbaf238c0ba220d7
+  languageName: node
+  linkType: hard
+
 "react@npm:^18.2.0":
   version: 18.2.0
   resolution: "react@npm:18.2.0"
@@ -8861,6 +8959,7 @@ __metadata:
     husky: "npm:^9.0.11"
     prettier: "npm:^3.2.5"
     react: "npm:^18.2.0"
+    react-use-websocket: "npm:^4.10.0"
     relay-config: "npm:^12.0.1"
     typescript: "npm:~5.3.3"
     vite: "npm:~5.1.2"
@@ -9162,6 +9261,28 @@ __metadata:
   version: 4.2.0
   resolution: "smart-buffer@npm:4.2.0"
   checksum: 10/927484aa0b1640fd9473cee3e0a0bcad6fce93fd7bbc18bac9ad0c33686f5d2e2c422fba24b5899c184524af01e11dd2bd051c2bf2b07e47aff8ca72cbfc60d2
+  languageName: node
+  linkType: hard
+
+"socket.io-client@npm:^4.8.0":
+  version: 4.8.0
+  resolution: "socket.io-client@npm:4.8.0"
+  dependencies:
+    "@socket.io/component-emitter": "npm:~3.1.0"
+    debug: "npm:~4.3.2"
+    engine.io-client: "npm:~6.6.1"
+    socket.io-parser: "npm:~4.2.4"
+  checksum: 10/98e05a6e3b19e6bae39bedbb6fd07e970e90c962b6ab9b68c4968a789be84efe40129b7f8abc73bafa31a29d444c3a0bde992131f93e7c3ddb27ef5192131e08
+  languageName: node
+  linkType: hard
+
+"socket.io-parser@npm:~4.2.4":
+  version: 4.2.4
+  resolution: "socket.io-parser@npm:4.2.4"
+  dependencies:
+    "@socket.io/component-emitter": "npm:~3.1.0"
+    debug: "npm:~4.3.1"
+  checksum: 10/4be500a9ff7e79c50ec25af11048a3ed34b4c003a9500d656786a1e5bceae68421a8394cf3eb0aa9041f85f36c1a9a737617f4aee91a42ab4ce16ffb2aa0c89c
   languageName: node
   linkType: hard
 
@@ -10415,6 +10536,28 @@ __metadata:
     utf-8-validate:
       optional: true
   checksum: 10/7c511c59e979bd37b63c3aea4a8e4d4163204f00bd5633c053b05ed67835481995f61a523b0ad2b603566f9a89b34cb4965cb9fab9649fbfebd8f740cea57f17
+  languageName: node
+  linkType: hard
+
+"ws@npm:~8.17.1":
+  version: 8.17.1
+  resolution: "ws@npm:8.17.1"
+  peerDependencies:
+    bufferutil: ^4.0.1
+    utf-8-validate: ">=5.0.2"
+  peerDependenciesMeta:
+    bufferutil:
+      optional: true
+    utf-8-validate:
+      optional: true
+  checksum: 10/4264ae92c0b3e59c7e309001e93079b26937aab181835fb7af79f906b22cd33b6196d96556dafb4e985742dd401e99139572242e9847661fdbc96556b9e6902d
+  languageName: node
+  linkType: hard
+
+"xmlhttprequest-ssl@npm:~2.1.1":
+  version: 2.1.1
+  resolution: "xmlhttprequest-ssl@npm:2.1.1"
+  checksum: 10/40affa3100d566709965910bb3877f5434d61a5588fef46dc896ec39f141261aafe922b5fbbaa79927f019bb8e765877563f0b2ffa69e4c8779b7666bb0c2cc1
   languageName: node
   linkType: hard
 

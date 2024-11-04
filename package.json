@@ -55,5 +55,8 @@
     "bracketSameLine": false,
     "arrowParens": "always",
     "endOfLine": "lf"
+  },
+  "dependencies": {
+    "react-use-websocket": "^4.10.0"
   }
 }
