@@ -1,7 +1,7 @@
 /* SPDX-FileCopyrightText: 2014-present Kriasoft */
 /* SPDX-License-Identifier: MIT */
 
-import { getAnalytics } from "firebase/analytics";
+// import { getAnalytics } from "firebase/analytics";
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 
@@ -14,4 +14,4 @@ export const app = initializeApp({
 });
 
 export const auth = getAuth(app);
-export const analytics = getAnalytics(app);
+// export const analytics = getAnalytics(app);

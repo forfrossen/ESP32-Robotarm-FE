@@ -2,13 +2,14 @@ import { useMutation } from "@tanstack/react-query";
 import Cookies from "js-cookie";
 import { useCallback, useEffect, useState } from "react";
 import { RequestState } from "./api/RequestStateModel";
-import { CreateClientIdResponse, systemApi } from "./api/system";
+import { CreateClientIdResponse, useSystemApi } from "./api/systemApi";
+import { useApiInfo } from "./api/useApiInfo";
 
 export const useClientId = () => {
   const [clientId, setClientId] = useState<string | null>(null);
   const [reqeustState, setRequestState] = useState<RequestState>("idle");
   const [hasClientRequestFailed, setHasClientRequestFailed] = useState(false);
-  const { createNewClientId } = systemApi();
+  const { createNewClientId } = useSystemApi();
 
   const handleError = useCallback((error: unknown) => {
     console.error("Failed to get client_id from server", error);
@@ -61,6 +62,60 @@ export const useClientId = () => {
     !hasClientRequestFailed &&
     mutation.status !== "pending" &&
     mutation.status !== "success";
+
+  const { apiInfo, apiInfoQuery } = useApiInfo();
+  const schemas = apiInfoQuery.isSuccess
+    ? apiInfoQuery?.data.components.schemas
+    : {};
+
+  const commandNames = Object.keys(schemas);
+
+  const getCommandParameters = (commandName) => {
+    const commandSchema = schemas[commandName];
+    const requiredParams = commandSchema.required || [];
+    const properties = commandSchema.properties || {};
+
+    const paramNames = requiredParams.filter((param) => param !== "method");
+    const params = paramNames.map((paramName) => {
+      const paramSchema = properties[paramName];
+      return {
+        name: paramName,
+        type: paramSchema.type,
+        format: paramSchema.format,
+      };
+    });
+
+    return params;
+  };
+
+  const buildCommandMessage = (commandName, paramValues) => {
+    const commandSchema = schemas[commandName];
+    if (!commandSchema) {
+      throw new Error(`Command ${commandName} not found in API spec.`);
+    }
+
+    const params = getCommandParameters(commandName);
+
+    // Build params object
+    const paramsObject = {};
+    params.forEach((param, index) => {
+      const value = paramValues[index];
+      if (value === undefined) {
+        throw new Error(`Missing value for parameter ${param.name}`);
+      }
+      paramsObject[param.name] = value;
+    });
+
+    // Construct JSON-RPC message
+    const message = {
+      jsonrpc: "2.0",
+      method: commandName,
+      params: paramsObject,
+      id: uuidv4(),
+    };
+
+    return message;
+  };
 
   useEffect(() => {
     getClientIdFromCookie()

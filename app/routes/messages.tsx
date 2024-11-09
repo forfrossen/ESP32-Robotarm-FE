@@ -87,6 +87,11 @@ export const Component = function Messages(): React.FC {
         ))}
       </StyledBox>
       <StyledBox>
+        <Button onClick={() => sendRpc(CommandType.EMERGENCY_STOP, undefined)}>
+          EMERGENCY_STOP
+        </Button>
+      </StyledBox>
+      <StyledBox>
         <MyInput value={customMessage} onChange={setCustomMessage} />
         {/* <Button
           disabled={customMessage.length < 1}

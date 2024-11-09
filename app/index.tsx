@@ -4,7 +4,6 @@
 import { CssBaseline, CssVarsProvider } from "@mui/joy";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { SnackbarProvider } from "notistack";
-import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { StoreProvider } from "./core/store";
 import { theme } from "./core/theme";
@@ -15,18 +14,16 @@ const root = createRoot(container!);
 const queryClient = new QueryClient();
 
 root.render(
-  <StrictMode>
-    <CssVarsProvider theme={theme}>
-      <SnackbarProvider>
-        <CssBaseline />
-        <QueryClientProvider client={queryClient}>
-          <StoreProvider>
-            <Router />
-          </StoreProvider>
-        </QueryClientProvider>
-      </SnackbarProvider>
-    </CssVarsProvider>
-  </StrictMode>,
+  <CssVarsProvider theme={theme}>
+    <SnackbarProvider>
+      <CssBaseline />
+      <QueryClientProvider client={queryClient}>
+        <StoreProvider>
+          <Router />
+        </StoreProvider>
+      </QueryClientProvider>
+    </SnackbarProvider>
+  </CssVarsProvider>,
 );
 
 if (import.meta.hot) {

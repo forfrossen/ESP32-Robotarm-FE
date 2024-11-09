@@ -1,47 +1,71 @@
-import { JSONRPCClient } from "json-rpc-2.0";
+import { useAtom, useAtomValue } from "jotai";
+import { JSONRPCClient, JSONRPCRequest } from "json-rpc-2.0";
 import { useCallback, useEffect, useRef, useState } from "react";
 import useWebSocket, { ReadyState } from "react-use-websocket";
 import { finalRequestState } from "./api/RequestStateModel";
-import { controllerWsUrl } from "./api/system";
+import { apiInfoAtom, controllerWsUrlAtom } from "./store";
 import { JsonRpcMessage, UseJsonRpcClientReturn } from "./types";
 import { useClientId } from "./useClientId";
 
 export function useJsonRpcClient(): UseJsonRpcClientReturn {
   const [messageHistory, setMessageHistory] = useState<JsonRpcMessage[]>([]);
   const { clientId, reqeustState, getNewClientId } = useClientId();
-  const [newClientIdRequested, setNewClientIdRequested] = useState(false);
   const [reconnectAttempts, setReconnectAttempts] = useState(0);
-  const effectiveUrl =
-    reqeustState === finalRequestState.success
-      ? `${controllerWsUrl}?client_id=${clientId}`
-      : "";
+  const [retryCount, setRetryCount] = useState(0);
 
-  const handleError = useCallback(
-    async (event: unknown) => {
-      console.error("WebSocket error trying to get new clientId", event);
-      if (!newClientIdRequested) {
-        await getNewClientId();
-        setNewClientIdRequested(true);
-      }
-    },
-    [newClientIdRequested, getNewClientId],
-  );
+  // const openApiConfigQuery = useQuery({
+  //   queryKey: ["openApiConfig"],
+  //   queryFn: () => getApiInfo(),
+  //   retry: 0,
+  // });
+
+  const openApiConfigQuery = useAtom(apiInfoAtom);
+  openApiConfigQuery.
+
+  const wsUrl = useAtomValue(controllerWsUrlAtom);
+
+  const effectiveUrl =
+    reqeustState === finalRequestState.success && !!clientId
+      ? `${wsUrl}?client_id=${clientId}`
+      : null;
+
+  useEffect(() => {
+    if (openApiConfigQuery.isSuccess) {
+      console.log(
+        "[DEBUG] openApiConfigQuery.isSuccess: ",
+        openApiConfigQuery.data,
+      );
+    } else if (openApiConfigQuery.isError) {
+      console.error(
+        "[ERROR] openApiConfigQuery.isError: ",
+        openApiConfigQuery.error,
+      );
+    } else if (openApiConfigQuery.isLoading) {
+      console.log("[DEBUG] openApiConfigQuery.isLoading: ");
+    }
+  }, [openApiConfigQuery]);
+
+  const handleWsConnectionError = async (event: unknown) => {
+    console.error("WebSocket error trying to get new clientId", event);
+    await getNewClientId();
+    setRetryCount(retryCount + 1);
+  };
+
+  const shouldReconnect = () => {
+    console.log("shouldReconnect", reconnectAttempts);
+    setReconnectAttempts(reconnectAttempts + 1);
+    return reconnectAttempts < 3;
+  };
 
   const { sendMessage, lastMessage, readyState, getWebSocket } = useWebSocket(
     effectiveUrl,
     {
       protocols: "jsonrpc2.0",
-      onError: handleError,
+      onError: handleWsConnectionError,
       retryOnError: true,
-      shouldReconnect: () => {
-        console.log("shouldReconnect", reconnectAttempts);
-        if (reconnectAttempts < 3) {
-          return true;
-        }
-        return false;
-      },
-      reconnectAttempts: 3,
-      reconnectInterval: 1000,
+      shouldReconnect: shouldReconnect,
+      reconnectAttempts: 5,
+      reconnectInterval: 2000,
     },
   );
 
@@ -56,14 +80,18 @@ export function useJsonRpcClient(): UseJsonRpcClientReturn {
     latestReadyState.current = readyState;
   }, [readyState]);
 
+  const jsonRpcCLient = async (jsonRPCRequest: JSONRPCRequest) => {
+    if (latestReadyState.current === ReadyState.OPEN) {
+      latestSendMessage.current(JSON.stringify(jsonRPCRequest));
+    } else {
+      return Promise.reject(new Error("WebSocket is not open"));
+    }
+  };
+
   const clientRef = useRef<JSONRPCClient>(
-    new JSONRPCClient((jsonRPCRequest) => {
-      if (latestReadyState.current === ReadyState.OPEN) {
-        latestSendMessage.current(JSON.stringify(jsonRPCRequest));
-      } else {
-        return Promise.reject(new Error("WebSocket is not open"));
-      }
-    }),
+    new JSONRPCClient((jsonRPCRequest: JSONRPCRequest) =>
+      jsonRpcCLient(jsonRPCRequest),
+    ),
   );
 
   const pendingRequests = useRef<
@@ -74,41 +102,41 @@ export function useJsonRpcClient(): UseJsonRpcClientReturn {
   >(new Map());
 
   useEffect(() => {
-    if (lastMessage !== null) {
-      try {
-        const data = JSON.parse(lastMessage.data);
-        if (data.id !== undefined) {
-          // This is a response to a request
-          clientRef.current.receive(data);
-        } else if (data.method && data.params !== undefined) {
-          // This is a notification from the server
-          setMessageHistory((prev) => [...prev, data as JsonRpcMessage]);
-        }
-      } catch (error) {
-        console.error("Failed to parse JSON-RPC message:", error);
+    if (lastMessage == null) {
+      return;
+    }
+    try {
+      const data = JSON.parse(lastMessage.data);
+      if (data.id !== undefined) {
+        // This is a response to a request
+        clientRef.current.receive(data);
+      } else if (data.method && data.params !== undefined) {
+        // This is a notification from the server
+        setMessageHistory((prev) => [...prev, data as JsonRpcMessage]);
       }
+    } catch (error) {
+      console.error("Failed to parse JSON-RPC message:", error);
     }
   }, [lastMessage]);
 
+  const handleError = (event: Event) => {
+    console.error("WebSocket error:", event);
+    // Reject all pending requests
+    pendingRequests.current.forEach(({ reject }) => {
+      reject(new Error("WebSocket error"));
+    });
+    pendingRequests.current.clear();
+  };
+
   useEffect(() => {
-    // Handle WebSocket errors
     const websocket = getWebSocket();
-    if (websocket) {
-      const handleError = (event: Event) => {
-        console.error("WebSocket error:", event);
-        // Reject all pending requests
-        pendingRequests.current.forEach(({ reject }) => {
-          reject(new Error("WebSocket error"));
-        });
-        pendingRequests.current.clear();
-      };
-
-      websocket.addEventListener("error", handleError);
-
-      return () => {
-        websocket.removeEventListener("error", handleError);
-      };
+    if (!websocket) {
+      return;
     }
+    websocket.addEventListener("error", handleError);
+    return () => {
+      websocket.removeEventListener("error", handleError);
+    };
   }, [getWebSocket]);
 
   const sendRpc: UseJsonRpcClientReturn["sendRpc"] = useCallback(
