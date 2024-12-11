@@ -1,5 +1,3 @@
-import { ReadyState } from "react-use-websocket";
-
 export enum CommandType {
   START = "START",
   STOP = "STOP",
@@ -47,76 +45,14 @@ export enum CommandType {
   UNKNOWN_COMMAND = "UNKNOWN_COMMAND",
   LAST_SEEN = "LAST_SEEN",
 }
-
-export interface JsonRpcRequest {
-  jsonrpc: "2.0";
-  method: string;
-  params?: unknown;
-  id?: string | number | null;
-  client_id: string;
+interface RpcMethodParams {
+  motor_id: number;
 }
 
-export interface JsonRpcResponse {
-  jsonrpc: "2.0";
-  result?: unknown;
-  error?: JsonRpcError;
-  id: string | number | null;
-}
-
-export interface JsonRpcError {
-  code: number;
-  message: string;
-  data?: unknown;
-}
-
-/**
- * JsonRpcMessage can be either a request or a response.
- */
-export type JsonRpcMessage = JsonRpcRequest | JsonRpcResponse;
-
-/**
- * RpcMethods maps method names to their parameter and result types.
- */
-export type RpcMethod = {
-  params?: any;
-  result: any;
-};
-
-// export type RpcMethods = {
-//   SET_RUNLEVEL: {
-//     params: { runlevel: number };
-//     result: boolean;
-//   };
-//   START: {
-//     params: undefined;
-//     result: boolean;
-//   };
-//   STOP: {
-//     params: undefined;
-//     result: boolean;
-//   };
-//   READ_MOTOR_SHAFT_ANGLE_ERROR: {
-//     params: { motor: number };
-//     result: number;
-//   };
-//   READ_ENCODER_VALUE_CARRY: {
-//     params: { encoder: number };
-//     result: number;
-//   };
-//   READ_ENCODED_VALUE_ADDITION: {
-//     params: { value: number };
-//     result: number;
-//   };
-//   READ_MOTOR_SPEED: {
-//     params: { speed: number };
-//     result: number;
-//   };
-// };
-
-type RpcMethodType<Params, Result> = {
-  params: Params;
+interface RpcMethodType<Params, Result> {
+  params: Params & RpcMethodParams;
   result: Result;
-};
+}
 
 export type RpcMethods = {
   [CommandType.START]: RpcMethodType<undefined, boolean>;
@@ -189,7 +125,12 @@ export type RpcMethods = {
   [CommandType.QUERY_MOTOR_STATUS]: RpcMethodType<undefined, boolean>;
   [CommandType.ENABLE_MOTOR]: RpcMethodType<{ enable: boolean }, boolean>;
   [CommandType.RUN_MOTOR_RELATIVE_MOTION_BY_AXIS]: RpcMethodType<
-    { axis: number; motion: number },
+    {
+      position: number;
+      direction: boolean;
+      speed: number;
+      acceleration: number;
+    },
     boolean
   >;
   [CommandType.RUN_MOTOR_ABSOLUTE_MOTION_BY_AXIS]: RpcMethodType<
@@ -211,17 +152,9 @@ export type RpcMethods = {
   [CommandType.LAST_SEEN]: RpcMethodType<undefined, boolean>;
 };
 
-type ParamsType<Method extends keyof RpcMethods> = RpcMethods[Method] extends {
-  params: infer P;
-}
-  ? P
-  : never;
-
-export interface UseJsonRpcClientReturn {
-  messageHistory: JsonRpcMessage[];
-  sendRpc: <Method extends keyof RpcMethods>(
-    method: Method,
-    params?: ParamsType<Method>,
-  ) => PromiseLike<RpcMethods[Method] extends { result: infer R } ? R : never>;
-  readyState: ReadyState;
-}
+export type ParamsType<Method extends keyof RpcMethods> =
+  RpcMethods[Method] extends {
+    params: infer P;
+  }
+    ? P
+    : never;

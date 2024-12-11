@@ -36,18 +36,19 @@
     "json-rpc-2.0": "^1.7.0",
     "localforage": "^1.10.0",
     "notistack": "^3.0.1",
-    "openapi-typescript": "^7.4.2",
+    "openapi-typescript": "^7.4.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.22.0",
     "react-use-websocket": "^4.10.1",
-    "socket.io-client": "^4.8.0"
+    "socket.io-client": "^4.8.0",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@babel/core": "^7.23.9",
     "@emotion/babel-plugin": "^11.11.0",
     "@types/js-cookie": "^3",
-    "@types/js-yaml": "^4",
+    "@types/js-yaml": "^4.0.9",
     "@types/node": "^20.11.18",
     "@types/react": "^18.2.55",
     "@types/react-dom": "^18.2.19",

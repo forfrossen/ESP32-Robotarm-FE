@@ -1,60 +1,59 @@
 import { useAtom, useAtomValue } from "jotai";
-import { JSONRPCClient, JSONRPCRequest } from "json-rpc-2.0";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { JSONRPCClient, JSONRPCRequest, JSONRPCResponse } from "json-rpc-2.0";
+import { useEffect, useRef, useState } from "react";
 import useWebSocket, { ReadyState } from "react-use-websocket";
-import { finalRequestState } from "./api/RequestStateModel";
-import { apiInfoAtom, controllerWsUrlAtom } from "./store";
-import { JsonRpcMessage, UseJsonRpcClientReturn } from "./types";
-import { useClientId } from "./useClientId";
+import {
+  apiInfoAtom,
+  clientIdAtom,
+  controllerWsUrlAtom,
+  nextRequestIdAtom,
+} from "../store/atoms";
+import { UseJsonRpcClientReturn } from "./types/common.types";
+import { JsonRpcRequest } from "./types/jsonRpc.types";
+import { useUpdateJsonRpcMultiResponse } from "./useUpdateJsonRpcMultiResponse";
 
 export function useJsonRpcClient(): UseJsonRpcClientReturn {
-  const [messageHistory, setMessageHistory] = useState<JsonRpcMessage[]>([]);
-  const { clientId, reqeustState, getNewClientId } = useClientId();
+  const [clientId, setClientId] = useAtom(clientIdAtom);
+  const openApiConfigQuery = useAtomValue(apiInfoAtom);
   const [reconnectAttempts, setReconnectAttempts] = useState(0);
   const [retryCount, setRetryCount] = useState(0);
-
-  // const openApiConfigQuery = useQuery({
-  //   queryKey: ["openApiConfig"],
-  //   queryFn: () => getApiInfo(),
-  //   retry: 0,
-  // });
-
-  const openApiConfigQuery = useAtom(apiInfoAtom);
-  openApiConfigQuery.
-
+  const { updateMultiResponseAtom } = useUpdateJsonRpcMultiResponse();
   const wsUrl = useAtomValue(controllerWsUrlAtom);
-
-  const effectiveUrl =
-    reqeustState === finalRequestState.success && !!clientId
-      ? `${wsUrl}?client_id=${clientId}`
-      : null;
+  const [requestId, setRequestId] = useAtom(nextRequestIdAtom);
+  const nextRequestId = () => setRequestId(requestId + 1);
+  const [effectiveUrl, setEffectiveUrl] = useState<string | null>(
+    clientId ? `${wsUrl}?client_id=${clientId}` : null,
+  );
 
   useEffect(() => {
-    if (openApiConfigQuery.isSuccess) {
-      console.log(
-        "[DEBUG] openApiConfigQuery.isSuccess: ",
-        openApiConfigQuery.data,
-      );
-    } else if (openApiConfigQuery.isError) {
-      console.error(
-        "[ERROR] openApiConfigQuery.isError: ",
-        openApiConfigQuery.error,
-      );
-    } else if (openApiConfigQuery.isLoading) {
-      console.log("[DEBUG] openApiConfigQuery.isLoading: ");
+    if (openApiConfigQuery.data) {
+      console.log("[DEBUG] openApiConfigQuery.data: ", openApiConfigQuery.data);
     }
-  }, [openApiConfigQuery]);
+  }, [openApiConfigQuery.data]);
 
-  const handleWsConnectionError = async (event: unknown) => {
-    console.error("WebSocket error trying to get new clientId", event);
-    await getNewClientId();
+  const handleWsConnectionError = async (event: Event) => {
+    console.error(
+      "WebSocket error trying to get new clientId. Error Event was: ",
+      event,
+    );
+
+    const result = await setClientId();
+    console.log(`[DEBUG] setClientId result: ${result}`);
+
+    if (result) {
+      setEffectiveUrl(`${wsUrl}?client_id=${result}`);
+    }
+
     setRetryCount(retryCount + 1);
   };
 
-  const shouldReconnect = () => {
+  const shouldReconnect = (): boolean => {
     console.log("shouldReconnect", reconnectAttempts);
     setReconnectAttempts(reconnectAttempts + 1);
-    return reconnectAttempts < 3;
+    if (reconnectAttempts >= 3) {
+      return false;
+    }
+    return true;
   };
 
   const { sendMessage, lastMessage, readyState, getWebSocket } = useWebSocket(
@@ -62,10 +61,10 @@ export function useJsonRpcClient(): UseJsonRpcClientReturn {
     {
       protocols: "jsonrpc2.0",
       onError: handleWsConnectionError,
-      retryOnError: true,
+      retryOnError: retryCount < 3,
       shouldReconnect: shouldReconnect,
-      reconnectAttempts: 5,
-      reconnectInterval: 2000,
+      reconnectInterval: (attemptIndex) =>
+        Math.min(1000 * 2 ** attemptIndex, 30000),
     },
   );
 
@@ -97,7 +96,10 @@ export function useJsonRpcClient(): UseJsonRpcClientReturn {
   const pendingRequests = useRef<
     Map<
       number,
-      { resolve: (value: any) => void; reject: (reason?: any) => void }
+      {
+        resolve: (value: JSONRPCResponse) => void;
+        reject: (reason?: unknown) => void;
+      }
     >
   >(new Map());
 
@@ -109,10 +111,12 @@ export function useJsonRpcClient(): UseJsonRpcClientReturn {
       const data = JSON.parse(lastMessage.data);
       if (data.id !== undefined) {
         // This is a response to a request
+        console.debug(`[DEBUG] Received response:`, data);
         clientRef.current.receive(data);
       } else if (data.method && data.params !== undefined) {
         // This is a notification from the server
-        setMessageHistory((prev) => [...prev, data as JsonRpcMessage]);
+        // setMessageHistory((prev) => [...prev, data as JsonRpcMessage]);
+        console.debug(`[DEBUG] Received notification:`, data);
       }
     } catch (error) {
       console.error("Failed to parse JSON-RPC message:", error);
@@ -139,15 +143,29 @@ export function useJsonRpcClient(): UseJsonRpcClientReturn {
     };
   }, [getWebSocket]);
 
-  const sendRpc: UseJsonRpcClientReturn["sendRpc"] = useCallback(
-    (method, params?) => {
-      const effectiveParams = params
-        ? { ...params, client_id: clientId }
-        : { client_id: clientId };
-      return clientRef.current.request(method as string, effectiveParams);
-    },
-    [clientId],
-  );
+  const sendRpc: UseJsonRpcClientReturn["sendRpc"] = (method, params?) => {
+    console.debug(`[DEBUG] Sending request: ${method}`, params);
+    nextRequestId();
+    const effectiveParams = params
+      ? { ...params, client_id: clientId }
+      : { client_id: clientId };
 
-  return { messageHistory, sendRpc, readyState };
+    const request: JSONRPCRequest = {
+      jsonrpc: "2.0",
+      method,
+      params: effectiveParams,
+      id: requestId,
+    };
+
+    console.debug(`[DEBUG] Sending request:`, request);
+
+    clientRef.current.requestAdvanced(request);
+
+    updateMultiResponseAtom(requestId, {
+      ...request,
+      timestamp: Date.now(),
+    } as JsonRpcRequest<typeof effectiveParams>);
+  };
+
+  return { sendRpc, readyState };
 }

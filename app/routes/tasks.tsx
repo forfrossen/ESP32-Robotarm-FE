@@ -4,12 +4,18 @@
 import { Container, Typography } from "@mui/joy";
 import { useAtom } from "jotai";
 import { usePageEffect } from "../core/page";
-import { apiInfoAtom } from "../robot-arm/store";
+
+import { apiInfoAtom } from "../store/atoms";
 import { StyledBox } from "./styles";
 
 export const Component = function Tasks(): JSX.Element {
   usePageEffect({ title: "Tasks" });
   const [apiInfoQuery] = useAtom(apiInfoAtom);
+
+  // const parsed =
+  //   apiInfoQuery.isSuccess && openapiTS(apiInfoQuery.data as string);
+
+  // console.log(parsed);
 
   // const schemas = apiInfoQuery.isSuccess
   //   ? apiInfoQuery?.data?.components.schemas

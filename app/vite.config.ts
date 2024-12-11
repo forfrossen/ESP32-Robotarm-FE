@@ -55,14 +55,14 @@ export default defineProject(async ({ mode }) => {
       }),
     ],
 
-    server: {
-      proxy: {
-        "/api": {
-          target: process.env.LOCAL_API_ORIGIN ?? process.env.API_ORIGIN,
-          changeOrigin: true,
-        },
-      },
-    },
+    // server: {
+    //   proxy: {
+    //     "/api": {
+    //       target: process.env.LOCAL_API_ORIGIN ?? process.env.API_ORIGIN,
+    //       changeOrigin: true,
+    //     },
+    //   },
+    // },
 
     test: {
       ...{ cache: { dir: "../.cache/vitest" } },

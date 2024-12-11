@@ -1,4 +1,4 @@
-import { CommandType } from "../types";
+import { CommandType } from "../robot-arm/types/jsonRrpcMethods.types";
 
 export type Command = {
   command: CommandType;
